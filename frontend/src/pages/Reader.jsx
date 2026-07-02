@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth, API_BASE_URL } from '../context/AuthContext';
-import { ChevronLeft, ChevronRight, Settings, Heart, MessageSquare, ArrowLeft, BookOpen, Lock, FolderOpen } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Settings, Heart, MessageSquare, ArrowLeft, BookOpen, Lock, FolderOpen, Download } from 'lucide-react';
 import CovenantBackground from '../components/CovenantBackground';
 
 export default function Reader() {
@@ -220,6 +220,39 @@ export default function Reader() {
     }
   };
 
+  const handleDownloadChapter = () => {
+    if (!chapter || !story) return;
+    
+    const htmlToPlainText = (html) => {
+      const temp = document.createElement('div');
+      temp.innerHTML = html;
+      return temp.textContent || temp.innerText || '';
+    };
+    
+    const plainText = htmlToPlainText(chapter.content);
+    const fileContent = `Tác phẩm: ${story.title}
+Tác giả: ${story.authorName}
+Thể loại: ${story.genre}
+--------------------------------------------------
+${chapter.title}
+--------------------------------------------------
+
+${plainText}
+`;
+
+    const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const safeStoryTitle = story.title.replace(/[^a-zA-Z0-9 Tiếng Việt]/g, '').trim();
+    const safeChapterTitle = chapter.title.replace(/[^a-zA-Z0-9 Tiếng Việt]/g, '').trim();
+    link.download = `${safeStoryTitle} - ${safeChapterTitle}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   if (loading) {
     return <div style={styles.loadingState}>Đang mở sách...</div>;
   }
@@ -336,6 +369,15 @@ export default function Reader() {
               </div>
             </div>
           )}
+
+          <button onClick={handleDownloadChapter} className="btn btn-secondary" title="Tải chương truyện (.txt)" style={{
+            ...styles.iconBtn,
+            borderColor: theme === 'covenant' ? 'var(--primary)' : styles.iconBtn.borderColor,
+            color: theme === 'covenant' ? 'var(--primary)' : 'inherit',
+            marginRight: '8px'
+          }}>
+            <Download size={18} />
+          </button>
 
           <button onClick={() => setShowSettings(!showSettings)} className="btn btn-secondary" style={{
             ...styles.iconBtn,

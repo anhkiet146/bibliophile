@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth, API_BASE_URL } from '../context/AuthContext';
-import { BookOpen, User, Calendar, BookMarked, MessageSquare, ChevronRight, Users, MessageCircle, Heart, Star } from 'lucide-react';
+import { BookOpen, User, Calendar, BookMarked, MessageSquare, ChevronRight, Users, MessageCircle, Heart, Star, Download } from 'lucide-react';
 
 export default function StoryDetails() {
   const { id } = useParams();
@@ -90,6 +90,41 @@ export default function StoryDetails() {
     }
   };
 
+  const handleDownloadFullStory = () => {
+    if (!story) return;
+
+    const htmlToPlainText = (html) => {
+      const temp = document.createElement('div');
+      temp.innerHTML = html;
+      return temp.textContent || temp.innerText || '';
+    };
+
+    let fileContent = `Tác phẩm: ${story.title}
+Tác giả: ${story.authorName}
+Thể loại: ${story.genre}
+Tóm tắt: ${story.synopsis}
+==================================================
+`;
+
+    visibleChapters.forEach((chap) => {
+      const plainText = htmlToPlainText(chap.content);
+      fileContent += `\n\n--------------------------------------------------
+${chap.title}
+--------------------------------------------------\n\n${plainText}\n`;
+    });
+
+    const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const safeStoryTitle = story.title.replace(/[^a-zA-Z0-9 Tiếng Việt]/g, '').trim();
+    link.download = `${safeStoryTitle} - Toàn bộ.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   if (loading) {
     return <div style={styles.loadingState}>Đang tải thông tin truyện...</div>;
   }
@@ -154,10 +189,16 @@ export default function StoryDetails() {
 
           <div style={styles.actionRow}>
             {firstChapterId ? (
-              <Link to={`/story/${story.id}/read/${firstChapterId}`} className="btn btn-primary" style={styles.readBtn}>
-                <BookOpen size={18} />
-                Bắt đầu đọc truyện
-              </Link>
+              <>
+                <Link to={`/story/${story.id}/read/${firstChapterId}`} className="btn btn-primary" style={styles.readBtn}>
+                  <BookOpen size={18} />
+                  Bắt đầu đọc truyện
+                </Link>
+                <button onClick={handleDownloadFullStory} className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Download size={16} />
+                  Tải toàn bộ (.txt)
+                </button>
+              </>
             ) : (
               <button className="btn btn-secondary" disabled style={styles.readBtn}>
                 Truyện chưa có chương
