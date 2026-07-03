@@ -30,6 +30,27 @@ const cleanVietnameseText = (text) => {
   return clean;
 };
 
+const getChapterLabel = (chapters, currentChapterId) => {
+  let mainChapterIndex = 0;
+  let sideStoryIndex = 0;
+  
+  for (const chap of chapters) {
+    const isSideStory = chap.title.toLowerCase().includes('ngoại truyện');
+    if (isSideStory) {
+      sideStoryIndex++;
+      if (chap.id === currentChapterId) {
+        return `Ngoại truyện ${sideStoryIndex}`;
+      }
+    } else {
+      mainChapterIndex++;
+      if (chap.id === currentChapterId) {
+        return `Chương ${mainChapterIndex}`;
+      }
+    }
+  }
+  return '';
+};
+
 export default function WriterStudio() {
   const { user, loading: authLoading, getAuthHeader } = useAuth();
   const navigate = useNavigate();
@@ -616,7 +637,7 @@ export default function WriterStudio() {
                     {activeStory.chapters.map((chap, idx) => (
                       <div key={chap.id} style={styles.studioChapterRow}>
                         <div style={styles.studioChapterInfo}>
-                          <span style={styles.studioChapterIndex}>Chương {idx + 1}</span>
+                          <span style={styles.studioChapterIndex}>{getChapterLabel(activeStory.chapters, chap.id)}</span>
                           <span style={styles.studioChapterTitle}>{chap.title}</span>
                           <span style={{
                             ...styles.statusBadge, 

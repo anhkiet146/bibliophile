@@ -4,6 +4,27 @@ import { useAuth, API_BASE_URL } from '../context/AuthContext';
 import { ChevronLeft, ChevronRight, Settings, Heart, MessageSquare, ArrowLeft, BookOpen, Lock, FolderOpen, Download } from 'lucide-react';
 import CovenantBackground from '../components/CovenantBackground';
 
+const getChapterLabel = (chapters, currentChapterId) => {
+  let mainChapterIndex = 0;
+  let sideStoryIndex = 0;
+  
+  for (const chap of chapters) {
+    const isSideStory = chap.title.toLowerCase().includes('ngoại truyện');
+    if (isSideStory) {
+      sideStoryIndex++;
+      if (chap.id === currentChapterId) {
+        return `Ngoại truyện ${sideStoryIndex}`;
+      }
+    } else {
+      mainChapterIndex++;
+      if (chap.id === currentChapterId) {
+        return `Chương ${mainChapterIndex}`;
+      }
+    }
+  }
+  return '';
+};
+
 export default function Reader() {
   const { id, chapterId } = useParams();
   const { user, getAuthHeader } = useAuth();
@@ -461,7 +482,7 @@ ${plainText}
       {/* Main Chapter Text Area */}
       <main style={styles.readerBody}>
         <div style={styles.titleArea}>
-          <div style={styles.chapSubtitle}>Chương {currentIdx + 1} của {visibleChapters.length}</div>
+          <div style={styles.chapSubtitle}>{getChapterLabel(visibleChapters, chapter.id)} / {visibleChapters.length} chương</div>
           <h1 style={{...styles.chapTitle, fontFamily: fontFamily === 'serif' ? 'var(--font-serif)' : 'var(--font-sans)'}}>{chapter.title}</h1>
           {renderDivider()}
         </div>

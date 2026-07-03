@@ -3,6 +3,27 @@ import { useParams, Link } from 'react-router-dom';
 import { useAuth, API_BASE_URL } from '../context/AuthContext';
 import { BookOpen, User, Calendar, BookMarked, MessageSquare, ChevronRight, Users, MessageCircle, Heart, Star, Download } from 'lucide-react';
 
+const getChapterLabel = (chapters, currentChapterId) => {
+  let mainChapterIndex = 0;
+  let sideStoryIndex = 0;
+  
+  for (const chap of chapters) {
+    const isSideStory = chap.title.toLowerCase().includes('ngoại truyện');
+    if (isSideStory) {
+      sideStoryIndex++;
+      if (chap.id === currentChapterId) {
+        return `Ngoại truyện ${sideStoryIndex}`;
+      }
+    } else {
+      mainChapterIndex++;
+      if (chap.id === currentChapterId) {
+        return `Chương ${mainChapterIndex}`;
+      }
+    }
+  }
+  return '';
+};
+
 export default function StoryDetails() {
   const { id } = useParams();
   const { user, getAuthHeader } = useAuth();
@@ -268,7 +289,7 @@ ${chap.title}
                 style={styles.chapterItem}
                 className="details-chapter-item"
               >
-                <div style={styles.chapterIndex}>Chương {index + 1}</div>
+                <div style={styles.chapterIndex}>{getChapterLabel(visibleChapters, chapter.id)}</div>
                 <div style={styles.chapterTitleWrapper}>
                   <span style={styles.chapterTitle}>{chapter.title}</span>
                   {chapter.status === 'draft' && <span style={styles.draftBadge}>Bản nháp</span>}
